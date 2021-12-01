@@ -13,6 +13,6 @@ This is a compiler for a language that provide a python-like interface to draw f
 4. for x from \<num> to \<num> step \<num> draw(\<expr of x>, \<expr of x>)
 5. exit
 
-**project now is in the very beginning phrase of development, all function now will not run properly!**
+**project now is in the very beginning phrase of development, so all functions now will not run properly!**
 
 
