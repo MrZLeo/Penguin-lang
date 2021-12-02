@@ -40,13 +40,6 @@ pub enum Funcs {
     Ln(f64),
 }
 
-// We use Turtle crate to accomplish the drawing function
-// but it has a origin in the central of screen
-// in order to make it in the left and top of screen
-// we need a factor to convert it
-const HORIZONTAL: f64 = -320.0;
-const PERPENDICULAR: f64 = 250.0;
-
 impl RunTime {
     pub fn new() -> Self {
         RunTime {
@@ -70,74 +63,20 @@ impl RunTime {
 
     // todo: runtime capability: draw a picture :)
     pub fn for_draw(&mut self, stat: ForStruct) {
-        let root = BitMapBackend::new("graph/0.png", (960, 840))
+        let root = BitMapBackend::new("graph/0.png", (1024, 1024))
             .into_drawing_area();
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
-            .margin(10)
+            .margin(60)
             .x_label_area_size(30)
             .y_label_area_size(30)
-            .build_cartesian_2d(0f32..300f32, 0f32..300f32).unwrap();
+            .build_cartesian_2d(stat.from as f32..stat.to as f32, -2f32..2f32).unwrap();
 
         chart.configure_mesh().draw().unwrap();
 
-        // let root = BitMapBackend::new("plotters-doc-data/5.png", (640, 480)).into_drawing_area();
-        // root.fill(&WHITE);
-        // let root = root.margin(10, 10, 10, 10);
-        // // After this point, we should be able to draw construct a chart context
-        // let mut chart = ChartBuilder::on(&root)
-        //     // Set the caption of the chart
-        //     .caption("This is our first plot", ("sans-serif", 40).into_font())
-        //     // Set the size of the label region
-        //     .x_label_area_size(20)
-        //     .y_label_area_size(40)
-        //     // Finally attach a coordinate on the drawing area and make a chart context
-        //     .build_cartesian_2d(0f32..10f32, 0f32..10f32)?;
-        //
-        // // Then we can draw a mesh
-        // chart
-        //     .configure_mesh()
-        //     // We can customize the maximum number of labels allowed for each axis
-        //     .x_labels(5)
-        //     .y_labels(5)
-        //     // We can also change the format of the label text
-        //     .y_label_formatter(&|x| format!("{:.3}", x))
-        //     .draw()?;
-
-        // chart
-        //     .draw_series(PointSeries::of_element(
-        //         (stat.from as f32..stat.to as f32)
-        //             .step(stat.step as f32)
-        //             .values()
-        //             .map(
-        //                 |x| {
-        //                     // let lexer = lexerdef.lexer(stat.x);
-        //                     // let (x, errs) = func_y::parse(&lexer);
-        //                     // for e in errs {
-        //                     //     println!("{}", e.pp(&lexer, &func_y::token_epp));
-        //                     // }
-        //                     //
-        //                     // let lexer = lexerdef.lexer(stat.y);
-        //                     // let (y, errs) = func_y::parse(&lexer);
-        //                     // for e in errs {
-        //                     //     println!("{}", e.pp(&lexer, &func_y::token_epp));
-        //                     // }
-        //                     //
-        //                     // (x.unwrap(), y.unwrap())
-        //                     (x, x)
-        //                 }
-        //             ),
-        //         5,
-        //         &RED,
-        //         &|coord, size, style| {
-        //             EmptyElement::at(coord)
-        //                 + Circle::new((0, 0), size, style)
-        //                 + Text::new(format!("{:?}", coord), (0, 15), ("sans-serif", 15))
-        //         },
-        //     )).unwrap();
         let lexerdef = func_l::lexerdef();
 
-        chart.draw_series(LineSeries::new(
+        chart.draw_series(PointSeries::of_element(
             (stat.from as f32..stat.to as f32)
                 .step(stat.step as f32)
                 .values()
@@ -156,7 +95,7 @@ impl RunTime {
 
                     if let Some(x) = x {
                         if let Some(y) = y {
-                            (Eval::new(stat.x).eval(&x, v), Eval::new(stat.y).eval(&y, v))
+                            self.process_data(Eval::new(stat.x).eval(&x, v), Eval::new(stat.y).eval(&y, v))
                         } else {
                             unreachable!()
                         }
@@ -164,11 +103,34 @@ impl RunTime {
                         unreachable!()
                     }
                 }),
-            &BLUE,
+            2,
+            ShapeStyle::from(&RED).filled(),
+            &|coord, size, style| {
+                EmptyElement::at(coord)
+                    + Circle::new((0, 0), size, style)
+            },
         )).unwrap();
+        println!("Draw success in ./graph/0.png");
     }
 
-    // todo: <11.30> 1. comment; 2. for statement
+    fn process_data(&self, x: f32, y: f32) -> (f32, f32) {
+        // scale
+        let mut x = x as f64 * self.scale.0;
+        let mut y = y as f64 * self.scale.1;
+
+        // rotation
+        //     temp=local_x*cos(Rot_angle)+local_y*sin(Rot_angle);
+        //     local_y=local_y*cos(Rot_angle)-local_x*sin(Rot_angle);
+        //     local_x = temp;
+        x = x * self.rot.cos() + y * self.rot.sin();
+        y = y * self.rot.cos() - x * self.rot.sin();
+
+        // translation
+        x += self.origin.0;
+        y += self.origin.1;
+
+        (x as f32, y as f32)
+    }
 }
 
 struct Eval<'a> {
@@ -227,7 +189,7 @@ impl<'a> Eval<'a> {
                 ref nodes,
             } if ridx == func_y::R_F => {
                 if nodes.len() == 1 {
-                    if let Node::Term = nodes[0] {
+                    if let Node::Term { lexeme } = nodes[0] {
                         // self.s[lexeme.span().start()..lexeme.span().end()]
                         //     .parse()
                         //     .unwrap()
@@ -236,11 +198,14 @@ impl<'a> Eval<'a> {
                         unreachable!();
                     }
                 } else if let Node::Term { lexeme } = nodes[0] {
-                    match &self.s[lexeme.span().start()..lexeme.span().end()] {
+                    let str = &self.s[lexeme.span().start()..lexeme.span().end()];
+                    // println!("str: {}", str);
+                    match str {
                         "sin" => x.sin(),
                         "cos" => x.cos(),
                         "tan" => x.tan(),
                         "ln" => x.ln(),
+                        "exp" => x.exp(),
                         _ => unreachable!()
                     }
                 } else {

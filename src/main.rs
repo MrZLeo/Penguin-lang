@@ -52,7 +52,8 @@ fn main() {
                             DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
                             DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
                             DrawableKind::DrawableFor(x) => rt.for_draw(x),
-                            DrawableKind::Exit => break
+                            DrawableKind::Exit => break,
+                            // _ => continue,
                         };
                     }
                     _ => eprintln!("Unable to evaluate expression.")

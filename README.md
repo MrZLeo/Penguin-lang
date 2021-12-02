@@ -1,5 +1,5 @@
 # Draw-Lang
-This is a compiler for a language that provide a python-like interface to draw figure.
+This is a compiler for a language that provide a python-like interface to draw figures.
 
 - use `cargo run`to compile and use it.
 - when program launch, you can see an interface like
