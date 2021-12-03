@@ -29,7 +29,7 @@ fn main() {
         io::stdout().flush().ok();
         match stdin.lock().lines().next() {
             Some(Ok(ref l)) => {
-                if l.trim().to_lowercase().is_empty() {
+                if l.trim().is_empty() {
                     continue;
                 }
                 if l.starts_with("//") || l.starts_with("--") {
@@ -37,7 +37,18 @@ fn main() {
                 }
                 // Now we create a lexer with the `lexer` method with which
                 // we can lex an input.
-                let lexer = lexerdef.lexer(l);
+                let l = l[0..match l.find("//") {
+                    None => { l.len() }
+                    Some(idx) => { idx }
+                }].to_string();
+                let l = l[0..match l.find("--") {
+                    None => { l.len() }
+                    Some(idx) => { idx }
+                }].to_string();
+
+
+                let l = l.to_lowercase();
+                let lexer = lexerdef.lexer(l.as_str());
                 // Pass the lexer to the parser and lex and parse the input.
                 let (res, errs) = parser_y::parse(&lexer);
                 for e in errs {

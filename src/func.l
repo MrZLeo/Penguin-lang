@@ -6,5 +6,5 @@ x "ALPHABET"
 / "DIV"
 \( "LB"
 \) "RB"
-cos|sin|tan|ln|exp "FUNC"
+cos|sin|tan|ln|exp|sqrt "FUNC"
 [\t ]+ ;

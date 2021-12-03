@@ -68,6 +68,14 @@ Term -> Result<f64, ()>:
     ;
 
 Factor -> Result<f64, ()>:
+      Atom 'POWER' Atom
+        {
+          Ok($1?.powf($3?))
+        }
+    |  Atom { Ok($1?) }
+    ;
+
+Atom -> Result<f64, ()>:
       'LB' Expr 'RB' { $2 }
     | 'FLOAT'
       {
@@ -75,6 +83,7 @@ Factor -> Result<f64, ()>:
           parse_float($lexer.span_str(v.span()))
       }
     ;
+
 %%
 // Any functions here are in scope for all the grammar actions above.
 use crate::rt_util::*;

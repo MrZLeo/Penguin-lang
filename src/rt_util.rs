@@ -70,7 +70,7 @@ impl RunTime {
             .margin(60)
             .x_label_area_size(30)
             .y_label_area_size(30)
-            .build_cartesian_2d(stat.from as f32..stat.to as f32, -2f32..2f32).unwrap();
+            .build_cartesian_2d(stat.from as f32..stat.to as f32, -4f32..4f32).unwrap();
 
         chart.configure_mesh().draw().unwrap();
 
@@ -206,6 +206,7 @@ impl<'a> Eval<'a> {
                         "tan" => x.tan(),
                         "ln" => x.ln(),
                         "exp" => x.exp(),
+                        "sqrt" => x.sqrt(),
                         _ => unreachable!()
                     }
                 } else {
