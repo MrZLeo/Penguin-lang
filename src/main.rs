@@ -1,4 +1,5 @@
 mod rt_util;
+mod tree_node;
 
 use std::io::{self, BufRead, Write};
 
@@ -9,15 +10,17 @@ use crate::rt_util::*;
 // Using `lrlex_mod!` brings the lexer for `calc.l` into scope. By default the
 // module name will be `calc_l` (i.e. the file name, minus any extensions,
 // with a suffix of `_l`).
-// lrlex_mod!("parser_lexer.l");
 lrlex_mod!("lexer.l");
 // Using `lrpar_mod!` brings the parser for `calc.y` into scope. By default the
 // module name will be `calc_y` (i.e. the file name, minus any extensions,
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
+const VERSION: &str = "0.1.1";
+
 fn main() {
     // basic information
+    println!("Drawing compiler: version {}", VERSION);
     let mut rt = RunTime::new();
 
     // Get the `LexerDef` for the `drawing` language.
@@ -62,9 +65,9 @@ fn main() {
                             DrawableKind::Rot(r) => rt.set_rot(r),
                             DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
                             DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
-                            DrawableKind::DrawableFor(x) => rt.for_draw(x),
+                            // DrawableKind::DrawableFor(x) => rt.for_draw(x),
                             DrawableKind::Exit => break,
-                            // _ => continue,
+                            _ => continue,
                         };
                     }
                     _ => eprintln!("Unable to evaluate expression.")

@@ -4,13 +4,14 @@ use cfgrammar::RIdx;
 use lrlex::{DefaultLexeme, lrlex_mod};
 use lrpar::{Lexeme, lrpar_mod, Node};
 use plotters::prelude::*;
+use crate::tree_node::TreeNode;
 
 lrpar_mod!("func.y");
 lrlex_mod!("func.l");
 
 #[derive(Debug)]
-pub enum DrawableKind<'a> {
-    DrawableFor(ForStruct<'a>),
+pub enum DrawableKind {
+    DrawableFor(ForStruct),
     Rot(f64),
     Origin(f64, f64),
     Scale(f64, f64),
@@ -18,26 +19,18 @@ pub enum DrawableKind<'a> {
 }
 
 #[derive(Debug)]
-pub struct ForStruct<'a> {
-    pub ch: &'a str,
+pub struct ForStruct {
     pub from: f64,
     pub to: f64,
     pub step: f64,
-    pub x: &'a str,
-    pub y: &'a str,
+    pub x: Box<TreeNode>,
+    pub y: Box<TreeNode>,
 }
 
 pub struct RunTime {
     origin: (f64, f64),
     rot: f64,
     scale: (f64, f64),
-}
-
-pub enum Funcs {
-    Cos(f64),
-    Tan(f64),
-    Sin(f64),
-    Ln(f64),
 }
 
 impl RunTime {
@@ -62,56 +55,56 @@ impl RunTime {
     }
 
     // todo: runtime capability: draw a picture :)
-    pub fn for_draw(&mut self, stat: ForStruct) {
-        let root = BitMapBackend::new("graph/0.png", (1024, 1024))
-            .into_drawing_area();
-        root.fill(&WHITE).unwrap();
-        let mut chart = ChartBuilder::on(&root)
-            .margin(60)
-            .x_label_area_size(30)
-            .y_label_area_size(30)
-            .build_cartesian_2d(stat.from as f32..stat.to as f32, -4f32..4f32).unwrap();
-
-        chart.configure_mesh().draw().unwrap();
-
-        let lexerdef = func_l::lexerdef();
-
-        chart.draw_series(PointSeries::of_element(
-            (stat.from as f32..stat.to as f32)
-                .step(stat.step as f32)
-                .values()
-                .map(|v| {
-                    let lexer = lexerdef.lexer(stat.x);
-                    let (x, errs) = func_y::parse(&lexer);
-                    for e in errs {
-                        println!("{}", e.pp(&lexer, &func_y::token_epp));
-                    }
-
-                    let lexer = lexerdef.lexer(stat.y);
-                    let (y, errs) = func_y::parse(&lexer);
-                    for e in errs {
-                        println!("{}", e.pp(&lexer, &func_y::token_epp));
-                    }
-
-                    if let Some(x) = x {
-                        if let Some(y) = y {
-                            self.process_data(Eval::new(stat.x).eval(&x, v), Eval::new(stat.y).eval(&y, v))
-                        } else {
-                            unreachable!()
-                        }
-                    } else {
-                        unreachable!()
-                    }
-                }),
-            2,
-            ShapeStyle::from(&RED).filled(),
-            &|coord, size, style| {
-                EmptyElement::at(coord)
-                    + Circle::new((0, 0), size, style)
-            },
-        )).unwrap();
-        println!("Draw success in ./graph/0.png");
-    }
+    // pub fn for_draw(&mut self, stat: ForStruct) {
+    //     let root = BitMapBackend::new("graph/0.png", (1024, 1024))
+    //         .into_drawing_area();
+    //     root.fill(&WHITE).unwrap();
+    //     let mut chart = ChartBuilder::on(&root)
+    //         .margin(60)
+    //         .x_label_area_size(30)
+    //         .y_label_area_size(30)
+    //         .build_cartesian_2d(stat.from as f32..stat.to as f32, -4f32..4f32).unwrap();
+    //
+    //     chart.configure_mesh().draw().unwrap();
+    //
+    //     let lexerdef = func_l::lexerdef();
+    //
+    //     chart.draw_series(PointSeries::of_element(
+    //         (stat.from as f32..stat.to as f32)
+    //             .step(stat.step as f32)
+    //             .values()
+    //             .map(|v| {
+    //                 let lexer = lexerdef.lexer(stat.x);
+    //                 let (x, errs) = func_y::parse(&lexer);
+    //                 for e in errs {
+    //                     println!("{}", e.pp(&lexer, &func_y::token_epp));
+    //                 }
+    //
+    //                 let lexer = lexerdef.lexer(stat.y);
+    //                 let (y, errs) = func_y::parse(&lexer);
+    //                 for e in errs {
+    //                     println!("{}", e.pp(&lexer, &func_y::token_epp));
+    //                 }
+    //
+    //                 if let Some(x) = x {
+    //                     if let Some(y) = y {
+    //                         self.process_data(Eval::new(stat.x).eval(&x, v), Eval::new(stat.y).eval(&y, v))
+    //                     } else {
+    //                         unreachable!()
+    //                     }
+    //                 } else {
+    //                     unreachable!()
+    //                 }
+    //             }),
+    //         2,
+    //         ShapeStyle::from(&RED).filled(),
+    //         &|coord, size, style| {
+    //             EmptyElement::at(coord)
+    //                 + Circle::new((0, 0), size, style)
+    //         },
+    //     )).unwrap();
+    //     println!("Draw success in ./graph/0.png");
+    // }
 
     fn process_data(&self, x: f32, y: f32) -> (f32, f32) {
         // scale

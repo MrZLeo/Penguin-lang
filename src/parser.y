@@ -1,6 +1,6 @@
 %start Stat
 %%
-Stat -> Result<DrawableKind<'input>, ()>:
+Stat -> Result<DrawableKind, ()>:
       'ORIGIN' 'IS' Origin 'SEMICOLON' { $3 }
     | 'ROT' 'IS' Rot 'SEMICOLON' { $3 }
     | 'SCALE' 'IS' Scale 'SEMICOLON' { $3 }
@@ -8,52 +8,141 @@ Stat -> Result<DrawableKind<'input>, ()>:
     | 'EXIT' { Ok(DrawableKind::Exit) }
     ;
 
-Origin -> Result<DrawableKind<'input>, ()>:
+Origin -> Result<DrawableKind, ()>:
     'LB' Expr 'COMMA' Expr 'RB' {
       Ok(DrawableKind::Origin($2?, $4?))
     }
     ;
 
-Rot -> Result<DrawableKind<'input>, ()>:
+Rot -> Result<DrawableKind, ()>:
     Expr {
       Ok(DrawableKind::Rot($1?))
     }
     ;
 
-Scale -> Result<DrawableKind<'input>, ()>:
+Scale -> Result<DrawableKind, ()>:
     'LB' Expr 'COMMA' Expr 'RB' {
       Ok(DrawableKind::Scale($2?, $4?))
     }
     ;
 
-DrawFor -> Result<DrawableKind<'input>, ()>:
-    Alphabet 'FROM' Expr 'TO' Expr 'STEP' Expr 'DRAW' 'LB' Alphabet 'COMMA' Alphabet 'RB'
+DrawFor -> Result<DrawableKind, ()>:
+    'T' 'FROM' Expr 'TO' Expr 'STEP' Expr 'DRAW' 'LB' TreeE 'COMMA' TreeE 'RB'
         {
             Ok(DrawableKind::DrawableFor(
                 ForStruct {
-                    ch: $1?,
                     from: $3?,
                     to: $5?,
                     step: $7?,
-                    x: $10?,
-                    y: $12?,
+                    x: $10?.unwrap(),
+                    y: $12?.unwrap(),
                 }
             ))
         }
     ;
 
-Alphabet -> Result<&'input str, ()>:
-      'ALPHABET'
+TreeE -> Result<Option<Box<TreeNode>>, ()>:
+      TreeE 'PLUS' TreeT
+        {
+            let v = $2.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: $1?,
+                right: $3?,
+            })))
+        }
+    | TreeE 'MINUS' TreeT
+        {
+            let v = $2.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: $1?,
+                right: $3?,
+            })))
+        }
+    | TreeT { $1 }
+    ;
+
+TreeT -> Result<Option<Box<TreeNode>>, ()>:
+      TreeT 'MUL' TreeF
+        {
+            let v = $2.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: $1?,
+                right: $3?,
+            })))
+        }
+    | TreeT 'DIV' TreeF
+        {
+            let v = $2.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: $1?,
+                right: $3?,
+            })))
+        }
+    | TreeF { $1 }
+    ;
+
+TreeF -> Result<Option<Box<TreeNode>>, ()>:
+      'PLUS' TreeF { Ok($2?) }
+    | 'MINUS' TreeF
         {
             let v = $1.map_err(|_| ())?;
-            Ok($lexer.span_str(v.span()))
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: None,
+                right: $2?,
+            })))
         }
-    | 'FLOAT'
+    | TreeC { $1 }
+    ;
+
+TreeC -> Result<Option<Box<TreeNode>>, ()>:
+      TreeA 'POWER' TreeC
         {
-           let v = $1.map_err(|_| ())?;
-           Ok($lexer.span_str(v.span()))
+            let v = $2.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: $1?,
+                right: $3?,
+            })))
+        }
+    | TreeA { $1 }
+    ;
+
+TreeA -> Result<Option<Box<TreeNode>>, ()>:
+      'LB' TreeE 'RB' { $2 }
+    | 'FUNC' 'LB' TreeE 'RB'
+        {
+            let v = $1.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: $3?,
+                right: None,
+            })))
+        }
+    | 'T'
+        {
+            let v = $1.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: None,
+                right: None,
+            })))
+        }
+    | 'CONST'
+        {
+            let v = $1.map_err(|_| ())?;
+            Ok(Some(Box::new(TreeNode {
+                val: $lexer.span_str(v.span()).to_string(),
+                left: None,
+                right: None,
+            })))
         }
     ;
+
 
 Expr -> Result<f64, ()>:
       Expr 'PLUS' Term { Ok($1? + $3?) }
@@ -68,11 +157,17 @@ Term -> Result<f64, ()>:
     ;
 
 Factor -> Result<f64, ()>:
-      Atom 'POWER' Atom
+      'PLUS' Factor { Ok($2?) }
+    | 'MINUS' Factor { Ok(-$2?) }
+    | Component { $1 }
+    ;
+
+Component -> Result<f64, ()>:
+      Atom 'POWER' Component
         {
           Ok($1?.powf($3?))
         }
-    |  Atom { Ok($1?) }
+    | Atom { $1 }
     ;
 
 Atom -> Result<f64, ()>:
@@ -82,13 +177,20 @@ Atom -> Result<f64, ()>:
           let v = $1.map_err(|_| ())?;
           parse_float($lexer.span_str(v.span()))
       }
-    | 'E' { Ok(std::f64::consts::E) }
-    | 'PI' { Ok(std::f64::consts::PI) }
+    | 'CONST' {
+        let v = $1.map_err(|_| ())?;
+        match $lexer.span_str(v.span()) {
+            "e" => Ok(std::f64::consts::E),
+            "pi" => Ok(std::f64::consts::PI),
+            _ => Err(()),
+        }
+    }
     ;
 
 %%
 // Any functions here are in scope for all the grammar actions above.
 use crate::rt_util::*;
+use crate::tree_node::TreeNode;
 
 fn parse_float(s: &str) -> Result<f64, ()> {
     match s.parse::<f64>() {
