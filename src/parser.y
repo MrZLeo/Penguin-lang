@@ -82,6 +82,8 @@ Atom -> Result<f64, ()>:
           let v = $1.map_err(|_| ())?;
           parse_float($lexer.span_str(v.span()))
       }
+    | 'E' { Ok(std::f64::consts::E) }
+    | 'PI' { Ok(std::f64::consts::PI) }
     ;
 
 %%

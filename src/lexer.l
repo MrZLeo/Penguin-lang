@@ -21,4 +21,6 @@ x|sin\(x\)|cos\(x\)|tan\(x\)|ln\(x\)|exp\(x\)|sqrt\(x\) "ALPHABET"
 \( "LB"
 \) "RB"
 \*\* "POWER"
+pi "PI"
+e "E"
 [\t ]+ ;
