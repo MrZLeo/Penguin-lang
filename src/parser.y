@@ -141,6 +141,15 @@ TreeA -> Result<Option<Box<TreeNode>>, ()>:
                 right: None,
             })))
         }
+    | 'FLOAT'
+        {
+           let v = $1.map_err(|_| ())?;
+           Ok(Some(Box::new(TreeNode {
+               val: $lexer.span_str(v.span()).to_string(),
+               left: None,
+               right: None,
+           })))
+        }
     ;
 
 

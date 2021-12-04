@@ -60,7 +60,7 @@ fn main() {
                 match res {
                     Some(r) => {
                         // todo: match kind of token here and execute the corresponding logic
-                        println!("Result: {:?}", r);
+                        println!("Result: {:#?}", r);
                         match r.unwrap() {
                             DrawableKind::Rot(r) => rt.set_rot(r),
                             DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
