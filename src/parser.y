@@ -5,6 +5,7 @@ Stat -> Result<DrawableKind, ()>:
     | 'ROT' 'IS' Rot 'SEMICOLON' { $3 }
     | 'SCALE' 'IS' Scale 'SEMICOLON' { $3 }
     | 'FOR' DrawFor 'SEMICOLON' { $2 }
+    | 'SHOW' 'SEMICOLON' { Ok(DrawableKind::Show) }
     | 'EXIT' { Ok(DrawableKind::Exit) }
     ;
 

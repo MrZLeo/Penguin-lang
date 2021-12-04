@@ -12,6 +12,7 @@ pub enum DrawableKind {
     Rot(f64),
     Origin(f64, f64),
     Scale(f64, f64),
+    Show,
     Exit,
 }
 
@@ -28,6 +29,7 @@ pub struct RunTime {
     origin: (f64, f64),
     rot: f64,
     scale: (f64, f64),
+    graph: Vec<ForStruct>,
 }
 
 impl RunTime {
@@ -36,6 +38,7 @@ impl RunTime {
             origin: (0.0, 0.0),
             rot: 0.0,
             scale: (1.0, 1.0),
+            graph: Vec::new(),
         }
     }
 
@@ -53,34 +56,42 @@ impl RunTime {
 
     // todo: runtime capability: draw a picture :)
     pub fn for_draw(&mut self, stat: ForStruct) {
-        let root = BitMapBackend::new("graph/0.png", (1024, 1024))
-            .into_drawing_area();
+        self.graph.push(stat);
+    }
+
+    pub fn show(&mut self) {
+        let root =
+            BitMapBackend::new("graph/0.png", (1024, 1024))
+                .into_drawing_area();
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
             .margin(60)
             .x_label_area_size(30)
             .y_label_area_size(30)
             .build_cartesian_2d(0f32..10f32, -4f32..4f32).unwrap();
-
         chart.configure_mesh().draw().unwrap();
 
-        chart.draw_series(PointSeries::of_element(
-            (stat.from as f32..stat.to as f32)
-                .step(stat.step as f32)
-                .values()
-                .map(|v| {
-                    self.process_data(tree_node::eval(&stat.x, v as f64),
-                                      tree_node::eval(&stat.y, v as f64))
-                }),
-            2,
-            ShapeStyle::from(&RED).filled(),
-            &|coord, size, style| {
-                EmptyElement::at(coord)
-                    + Circle::new((0, 0), size, style)
-            },
-        )).unwrap();
+        self.graph.iter().for_each(|stat| {
+            chart.draw_series(PointSeries::of_element(
+                (stat.from as f32..stat.to as f32)
+                    .step(stat.step as f32)
+                    .values()
+                    .map(|v| {
+                        self.process_data(tree_node::eval(&stat.x, v as f64),
+                                          tree_node::eval(&stat.y, v as f64))
+                    }),
+                2,
+                ShapeStyle::from(&RED).filled(),
+                &|coord, size, style| {
+                    EmptyElement::at(coord)
+                        + Circle::new((0, 0), size, style)
+                },
+            )).unwrap();
+        });
         println!("Draw success in ./graph/0.png");
+        self.graph.clear();
     }
+
 
     fn process_data(&self, x: f64, y: f64) -> (f32, f32) {
         // scale
