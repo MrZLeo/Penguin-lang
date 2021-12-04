@@ -16,7 +16,7 @@ lrlex_mod!("lexer.l");
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
-const VERSION: &str = "0.1.1";
+const VERSION: &str = "0.1.3";
 
 fn main() {
     // basic information
@@ -61,14 +61,18 @@ fn main() {
                     Some(r) => {
                         // todo: match kind of token here and execute the corresponding logic
                         println!("Result: {:#?}", r);
-                        match r.unwrap() {
-                            DrawableKind::Rot(r) => rt.set_rot(r),
-                            DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
-                            DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
-                            // DrawableKind::DrawableFor(x) => rt.for_draw(x),
-                            DrawableKind::Exit => break,
-                            _ => continue,
-                        };
+                        if let Ok(r) =  r {
+                            match r {
+                                DrawableKind::Rot(r) => rt.set_rot(r),
+                                DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
+                                DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
+                                DrawableKind::DrawableFor(x) => rt.for_draw(x),
+                                DrawableKind::Exit => break,
+                            }
+                        } else {
+                            println!("Illegal command");
+                            continue;
+                        }
                     }
                     _ => eprintln!("Unable to evaluate expression.")
                 }

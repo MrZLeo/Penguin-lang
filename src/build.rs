@@ -11,16 +11,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .lexer_in_src_dir("lexer.l")?
         .build()?;
 
-
-    CTLexerBuilder::new()
-        .lrpar_config(|ctp| {
-            ctp.yacckind(YaccKind::Original(YaccOriginalActionKind::GenericParseTree))
-                .grammar_in_src_dir("func.y")
-                .unwrap()
-        })
-        .lexer_in_src_dir("func.l")?
-        .build()?;
-
     Ok(())
 }
 

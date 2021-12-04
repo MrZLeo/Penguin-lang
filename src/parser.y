@@ -194,6 +194,20 @@ Atom -> Result<f64, ()>:
             _ => Err(()),
         }
     }
+    | 'FUNC' 'LB' Expr 'RB'
+      {
+        let v1 = $1.map_err(|_| ())?;
+        let x = $3?;
+        match $lexer.span_str(v1.span()) {
+            "sin" => Ok(x.sin()),
+            "cos" => Ok(x.cos()),
+            "tan" => Ok(x.tan()),
+            "ln" => Ok(x.ln()),
+            "exp" => Ok(x.exp()),
+            "sqrt" => Ok(x.sqrt()),
+            _ => Err(())
+        }
+      }
     ;
 
 %%
