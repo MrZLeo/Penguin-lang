@@ -2,9 +2,11 @@ mod rt_util;
 mod tree_node;
 
 use std::io::{self, BufRead, Write};
+use lazy_static::lazy_static;
 
 use lrlex::lrlex_mod;
 use lrpar::lrpar_mod;
+use crate::DrawableKind::Exit;
 use crate::rt_util::*;
 
 // Using `lrlex_mod!` brings the lexer for `calc.l` into scope. By default the
@@ -18,6 +20,16 @@ lrpar_mod!("parser.y");
 
 const VERSION: &str = "0.1.3";
 
+lazy_static! {
+    static ref EXIT: Vec<String> = {
+        let mut v = Vec::new();
+        v.push("exit".to_string());
+        v.push("q".to_string());
+        v.push("quit".to_string());
+        v
+    };
+}
+
 fn main() {
     // basic information
     println!("Drawing compiler: version {}", VERSION);
@@ -27,8 +39,14 @@ fn main() {
     // let lexerdef = parser_lexer_l::lexerdef();
     let lexerdef = lexer_l::lexerdef();
     let stdin = io::stdin();
+    let mut gl_input = String::new();
+    let mut is_continue = false;
     loop {
-        print!(">>> ");
+        if is_continue {
+            print!("...");
+        } else {
+            print!(">>> ");
+        }
         io::stdout().flush().ok();
         match stdin.lock().lines().next() {
             Some(Ok(ref l)) => {
@@ -49,9 +67,17 @@ fn main() {
                     Some(idx) => { idx }
                 }].to_string();
 
+                // if is not the end of line, continue
+                gl_input += &l.trim_end().to_lowercase();
+                if !gl_input.ends_with(";") && !EXIT.contains(&gl_input) {
+                    is_continue = true;
+                    gl_input += " ";
+                    continue;
+                }
 
-                let l = l.to_lowercase();
-                let lexer = lexerdef.lexer(l.as_str());
+                println!("gl: {}", gl_input);
+
+                let lexer = lexerdef.lexer(gl_input.as_str());
                 // Pass the lexer to the parser and lex and parse the input.
                 let (res, errs) = parser_y::parse(&lexer);
                 for e in errs {
@@ -61,7 +87,7 @@ fn main() {
                     Some(r) => {
                         // todo: match kind of token here and execute the corresponding logic
                         println!("Result: {:#?}", r);
-                        if let Ok(r) =  r {
+                        if let Ok(r) = r {
                             match r {
                                 DrawableKind::Rot(r) => rt.set_rot(r),
                                 DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
@@ -76,6 +102,10 @@ fn main() {
                     }
                     _ => eprintln!("Unable to evaluate expression.")
                 }
+
+                // prepare for new input
+                gl_input.clear();
+                is_continue = false;
             }
             _ => break
         }
