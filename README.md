@@ -1,4 +1,4 @@
-# Draw-Lang
+# Penguin-Lang
 This is a compiler for a language that provide a python-like interface to draw figures.
 
 - use `cargo run`to compile and use it.
