@@ -27,4 +27,6 @@ set "SET"
 x "X"
 y "Y"
 size "SIZE"
+color "COLOR"
+blue|red|green|black|yellow|cyan|magenta "COLORS"
 [\t ]+ ;

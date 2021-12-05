@@ -23,6 +23,7 @@ pub enum DrawableKind {
     XRange(f64, f64),
     YRange(f64, f64),
     DotSize(f64),
+    Color(String),
 }
 
 #[derive(Debug)]
@@ -38,10 +39,11 @@ pub struct RunTime {
     origin: (f64, f64),
     rot: f64,
     scale: (f64, f64),
-    graph: Vec<ForStruct>,
+    graph: Vec<(ForStruct, RunTime)>,
     x_range: (f64, f64),
     y_range: (f64, f64),
     size: f64,
+    color: String,
 }
 
 impl RunTime {
@@ -54,6 +56,21 @@ impl RunTime {
             x_range: (0.0, 10.0),
             y_range: (-4.0, 4.0),
             size: 2.0,
+            color: "blue".to_string(),
+        }
+    }
+
+    // use for snapshot
+    fn from(origin: (f64, f64), rot: f64, scale: (f64, f64), size: f64, color: String) -> Self {
+        RunTime {
+            origin,
+            rot,
+            scale,
+            graph: Vec::new(),
+            x_range: (0.0, 0.0),
+            y_range: (0.0, 0.0),
+            size,
+            color,
         }
     }
 
@@ -81,8 +98,19 @@ impl RunTime {
         self.size = size;
     }
 
+    pub fn set_color(&mut self, color: String) {
+        self.color = color;
+    }
+
     pub fn for_draw(&mut self, stat: ForStruct) {
-        self.graph.push(stat);
+        self.graph.push((stat,
+                         RunTime::from(
+                             self.origin,
+                             self.rot,
+                             self.scale,
+                             self.size,
+                             self.color.clone()))
+        );
     }
 
     pub fn show(&mut self) {
@@ -100,7 +128,7 @@ impl RunTime {
 
         chart.configure_mesh().draw().unwrap();
 
-        self.graph.iter().for_each(|stat| {
+        self.graph.iter().for_each(|(stat, rt)| {
             let from = f64::max(stat.from, self.x_range.0);
             let to = f64::min(stat.to, self.x_range.1);
             chart.draw_series(PointSeries::of_element(
@@ -108,8 +136,8 @@ impl RunTime {
                     .step(stat.step as f32)
                     .values()
                     .map(|v| {
-                        self.process_data(tree_node::eval(&stat.x, v as f64),
-                                          tree_node::eval(&stat.y, v as f64))
+                        rt.process_data(tree_node::eval(&stat.x, v as f64),
+                                        tree_node::eval(&stat.y, v as f64))
                     })
                     .filter(|(x, y)| {
                         y.to_owned() as f64 <= self.y_range.1
@@ -118,8 +146,17 @@ impl RunTime {
                             && x.to_owned() as f64 <= self.x_range.1
                     })
                 ,
-                self.size,
-                ShapeStyle::from(&BLUE).filled(),
+                rt.size,
+                match rt.color.as_str() {
+                    "blue" => ShapeStyle::from(&BLUE).filled(),
+                    "red" => ShapeStyle::from(&RED).filled(),
+                    "green" => ShapeStyle::from(&GREEN).filled(),
+                    "black" => ShapeStyle::from(&BLACK).filled(),
+                    "yellow" => ShapeStyle::from(&YELLOW).filled(),
+                    "cyan" => ShapeStyle::from(&CYAN).filled(),
+                    "magenta" => ShapeStyle::from(&MAGENTA).filled(),
+                    _ => ShapeStyle::from(&TRANSPARENT).filled(),
+                },
                 &|coord, size, style| {
                     EmptyElement::at(coord)
                         + Circle::new((0, 0), size, style)
@@ -172,6 +209,7 @@ impl RunTime {
                         DrawableKind::XRange(l, r) => self.set_x_range((l, r)),
                         DrawableKind::YRange(l, r) => self.set_y_range((l, r)),
                         DrawableKind::DotSize(size) => self.set_size(size),
+                        DrawableKind::Color(color) => self.set_color(color),
                         DrawableKind::Exit => exit(0),
                     }
                 } else {

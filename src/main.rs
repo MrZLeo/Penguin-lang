@@ -18,7 +18,7 @@ lrlex_mod!("lexer.l");
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
-const VERSION: &str = "0.2.3";
+const VERSION: &str = "0.2.5";
 
 lazy_static!(
     static ref EXIT: Vec<String> = {
@@ -43,11 +43,11 @@ fn info() {
 
 
 fn main() {
-    #[cfg(feature = "debug")] {
-        println!("debug mode is open.");
-    }
-
     info();
+
+    #[cfg(feature = "debug")] {
+        println!("### debug mode is open. ###");
+    }
 
     let runtime = RunTime::new();
 
@@ -78,7 +78,10 @@ fn main() {
 
 fn file(mut rt: RunTime, file: String) {
     #[cfg(feature = "debug")] {
-        println!("# whole file: \n{}", file);
+        println!("# whole file:");
+        println!("------------------------------");
+        println!("{}", file);
+        println!("------------------------------");
         println!("# program launch");
     }
     let file: String = file
@@ -104,9 +107,13 @@ fn file(mut rt: RunTime, file: String) {
         })
         .collect();
     #[cfg(feature = "debug")] {
-        println!("# file delete comment: \n{}", file);
+        println!("# file delete comment:");
+        println!("------------------------------");
+        println!("{}", file);
+        println!("------------------------------");
     }
 
+    // todo 文件中混杂exit怎么办？
     file.split(";")
         .into_iter()
         .filter(|stat| {
