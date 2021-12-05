@@ -75,12 +75,27 @@ fn file(file: String) {
     println!("# whole file: \n{}", file);
     println!("# program launch");
     let mut rt = RunTime::new();
-    let file: String = file.split("\n").filter(
-        |x| {
-            !x.starts_with("//") &&
-                !x.starts_with("--")
-        }
-    ).collect();
+    let file: String = file
+        .split("\n")
+        .filter(
+            |x| {
+                !x.starts_with("//") &&
+                    !x.starts_with("--")
+            }
+        )
+        .map(|x| {
+            &x[0..match x.find("//") {
+                None => { x.len() }
+                Some(index) => { index }
+            }]
+        })
+        .map(|x| {
+            &x[0..match x.find("--") {
+                None => { x.len() }
+                Some(index) => { index }
+            }]
+        })
+        .collect();
     println!("# file delete comment: \n{}", file);
 
     file.split(";")
