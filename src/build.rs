@@ -1,4 +1,4 @@
-use cfgrammar::yacc::{YaccKind, YaccOriginalActionKind};
+use cfgrammar::yacc::YaccKind;
 use lrlex::CTLexerBuilder;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

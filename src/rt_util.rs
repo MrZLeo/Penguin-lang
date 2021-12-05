@@ -1,6 +1,3 @@
-use std::f64::consts::E;
-use std::f64::consts::PI;
-use cfgrammar::RIdx;
 use plotters::prelude::*;
 use crate::tree_node::TreeNode;
 use crate::tree_node;

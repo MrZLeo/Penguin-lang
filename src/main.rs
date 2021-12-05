@@ -1,14 +1,12 @@
 mod rt_util;
 mod tree_node;
 
-use std::fmt::format;
+use std::fs;
 use std::io::{self, BufRead, Write};
 use lazy_static::lazy_static;
-
-
+use regex::Regex;
 use lrlex::lrlex_mod;
 use lrpar::lrpar_mod;
-use crate::DrawableKind::Exit;
 use crate::rt_util::*;
 
 // Using `lrlex_mod!` brings the lexer for `calc.l` into scope. By default the
@@ -20,7 +18,7 @@ lrlex_mod!("lexer.l");
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
-const VERSION: &str = "0.1.3.1";
+const VERSION: &str = "0.2";
 
 lazy_static! {
     static ref EXIT: Vec<String> = {
@@ -30,6 +28,7 @@ lazy_static! {
         v.push("quit".to_string());
         v
     };
+    static ref SUFFIX: Regex = Regex::new("^.*\\.pg$").unwrap();
 }
 
 fn info() {
@@ -63,10 +62,72 @@ fn main() {
                 break;
             }
         }
-
-
-        println!("file is :{}", file);
+        println!("# file is: {}", file);
+        if SUFFIX.is_match(&file) {
+            crate::file(fs::read_to_string(file).unwrap());
+        } else {
+            eprintln!("Error: file format is not support");
+        }
     }
+}
+
+fn file(file: String) {
+    println!("# whole file: \n{}", file);
+    println!("# program launch");
+    let mut rt = RunTime::new();
+    let file: String = file.split("\n").filter(
+        |x| {
+            !x.starts_with("//") &&
+                !x.starts_with("--")
+        }
+    ).collect();
+    println!("# file delete comment: \n{}", file);
+
+    file.split(";")
+        .into_iter()
+        .filter(|stat| {
+            stat.len() > 0
+        })
+        .for_each(
+            |stat| {
+                #[cfg(feature = "debug")] {
+                    println!("# file statement: {}", stat);
+                }
+                let mut stat = stat.to_string();
+                if !EXIT.contains(&stat) {
+                    stat = format!("{};", stat);
+                }
+                let lexerdef = lexer_l::lexerdef();
+                let lexer = lexerdef.lexer(stat.as_str());
+                // Pass the lexer to the parser and lex and parse the input.
+                let (res, errs) = parser_y::parse(&lexer);
+                for e in errs {
+                    println!("{}", e.pp(&lexer, &parser_y::token_epp));
+                }
+                match res {
+                    Some(r) => {
+                        if cfg!(feature="debug") {
+                            println!("Result: {:#?}", r);
+                        }
+                        if let Ok(r) = r {
+                            match r {
+                                DrawableKind::Rot(r) => rt.set_rot(r),
+                                DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
+                                DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
+                                DrawableKind::DrawableFor(x) => rt.for_draw(x),
+                                DrawableKind::Show => rt.show(),
+                                DrawableKind::Exit => {
+                                    return;
+                                }
+                            }
+                        } else {
+                            println!("Illegal command");
+                        }
+                    }
+                    _ => eprintln!("Unable to evaluate expression.")
+                }
+            }
+        )
 }
 
 fn shell() {
@@ -79,9 +140,7 @@ fn shell() {
     let lexerdef = lexer_l::lexerdef();
     let stdin = io::stdin();
     let mut gl_input = String::new();
-    let mut gl_backup = String::new();
     let mut is_continue = false;
-    let mut shutdown = false;
     'label: loop {
         if is_continue {
             print!("...");
@@ -119,9 +178,8 @@ fn shell() {
                 #[cfg(feature = "debug")] {
                     println!("global input: {}", gl_input);
                 }
-                gl_backup = gl_input.clone();
 
-                for mut v in gl_input.split(";") {
+                for v in gl_input.split(";") {
                     if v.len() <= 0 {
                         break;
                     }
@@ -165,7 +223,6 @@ fn shell() {
                         _ => eprintln!("Unable to evaluate expression.")
                     }
                 }
-
 
                 // prepare for new input
                 gl_input.clear();
