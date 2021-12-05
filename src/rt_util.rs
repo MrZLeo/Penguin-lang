@@ -22,6 +22,7 @@ pub enum DrawableKind {
     Exit,
     XRange(f64, f64),
     YRange(f64, f64),
+    DotSize(f64),
 }
 
 #[derive(Debug)]
@@ -40,6 +41,7 @@ pub struct RunTime {
     graph: Vec<ForStruct>,
     x_range: (f64, f64),
     y_range: (f64, f64),
+    size: f64,
 }
 
 impl RunTime {
@@ -51,6 +53,7 @@ impl RunTime {
             graph: Vec::new(),
             x_range: (0.0, 10.0),
             y_range: (-4.0, 4.0),
+            size: 2.0,
         }
     }
 
@@ -72,6 +75,10 @@ impl RunTime {
 
     pub fn set_y_range(&mut self, y_range: (f64, f64)) {
         self.y_range = y_range;
+    }
+
+    pub fn set_size(&mut self, size: f64) {
+        self.size = size;
     }
 
     pub fn for_draw(&mut self, stat: ForStruct) {
@@ -111,7 +118,7 @@ impl RunTime {
                             && x.to_owned() as f64 <= self.x_range.1
                     })
                 ,
-                2,
+                self.size,
                 ShapeStyle::from(&BLUE).filled(),
                 &|coord, size, style| {
                     EmptyElement::at(coord)
@@ -164,6 +171,7 @@ impl RunTime {
                         DrawableKind::Show => self.show(),
                         DrawableKind::XRange(l, r) => self.set_x_range((l, r)),
                         DrawableKind::YRange(l, r) => self.set_y_range((l, r)),
+                        DrawableKind::DotSize(size) => self.set_size(size),
                         DrawableKind::Exit => exit(0),
                     }
                 } else {

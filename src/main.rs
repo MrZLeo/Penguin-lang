@@ -38,6 +38,7 @@ fn info() {
     println!(r"  / /_/ /  __/ / / / /_/ / /_/ / / / / /");
     println!(r" / .___/\___/_/ /_/\__, /\__,_/_/_/ /_/ ");
     println!(r"/_/               /____/                ");
+    println!("Penguin compiler: version {}", VERSION);
 }
 
 
@@ -64,7 +65,9 @@ fn main() {
                 break;
             }
         }
-        println!("# file is: {}", file);
+        #[cfg(feature = "debug")] {
+            println!("# file is: {}", file);
+        }
         if SUFFIX.is_match(&file) {
             crate::file(runtime, fs::read_to_string(file).unwrap().to_lowercase());
         } else {
@@ -74,8 +77,10 @@ fn main() {
 }
 
 fn file(mut rt: RunTime, file: String) {
-    println!("# whole file: \n{}", file);
-    println!("# program launch");
+    #[cfg(feature = "debug")] {
+        println!("# whole file: \n{}", file);
+        println!("# program launch");
+    }
     let file: String = file
         .split("\n")
         .filter(
@@ -98,7 +103,9 @@ fn file(mut rt: RunTime, file: String) {
             }]
         })
         .collect();
-    println!("# file delete comment: \n{}", file);
+    #[cfg(feature = "debug")] {
+        println!("# file delete comment: \n{}", file);
+    }
 
     file.split(";")
         .into_iter()
@@ -120,11 +127,6 @@ fn file(mut rt: RunTime, file: String) {
 }
 
 fn shell(mut rt: RunTime) {
-    // basic information
-    println!("Penguin compiler: version {}", VERSION);
-
-    // Get the `LexerDef` for the `drawing` language.
-    // let lexerdef = parser_lexer_l::lexerdef();
     let stdin = io::stdin();
     let mut gl_input = String::new();
     let mut is_continue = false;

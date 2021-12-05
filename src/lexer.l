@@ -26,4 +26,5 @@ cos|sin|tan|ln|exp|sqrt "FUNC"
 set "SET"
 x "X"
 y "Y"
+size "SIZE"
 [\t ]+ ;
