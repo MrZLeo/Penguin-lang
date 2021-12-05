@@ -18,7 +18,7 @@ lrlex_mod!("lexer.l");
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
-const VERSION: &str = "0.2.2";
+const VERSION: &str = "0.2.3";
 
 lazy_static!(
     static ref EXIT: Vec<String> = {
@@ -73,10 +73,9 @@ fn main() {
     }
 }
 
-fn file(rt: RunTime, file: String) {
+fn file(mut rt: RunTime, file: String) {
     println!("# whole file: \n{}", file);
     println!("# program launch");
-    let mut rt = RunTime::new();
     let file: String = file
         .split("\n")
         .filter(
@@ -120,18 +119,16 @@ fn file(rt: RunTime, file: String) {
         )
 }
 
-fn shell(rt: RunTime) {
+fn shell(mut rt: RunTime) {
     // basic information
     println!("Penguin compiler: version {}", VERSION);
-    let mut rt = RunTime::new();
 
     // Get the `LexerDef` for the `drawing` language.
     // let lexerdef = parser_lexer_l::lexerdef();
-    let lexerdef = lexer_l::lexerdef();
     let stdin = io::stdin();
     let mut gl_input = String::new();
     let mut is_continue = false;
-    'label: loop {
+    loop {
         if is_continue {
             print!("...");
         } else {

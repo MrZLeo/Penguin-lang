@@ -9,7 +9,7 @@ pub fn eval(root: &TreeNode, v: f64) -> f64 {
     let val = &root.val[..];
 
     // is val a number?
-    if let Ok(a) =  val.parse() {
+    if let Ok(a) = val.parse() {
         return a;
     }
 
@@ -95,5 +95,5 @@ fn test_eval() {
     }));
 
     assert_eq!(eval(&x.as_ref().unwrap(), 1.0), 0.2817181715409549);
-    assert_eq!(eval(&x.as_ref().unwrap(), 2.0),  -1.3890560989306504);
+    assert_eq!(eval(&x.as_ref().unwrap(), 2.0), -1.3890560989306504);
 }

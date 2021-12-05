@@ -1,8 +1,6 @@
-use std::cmp::{max, min};
 use std::process::exit;
-use std::thread::yield_now;
 use lazy_static::lazy_static;
-use lrlex::{DefaultLexeme, LexerDef, lrlex_mod, LRNonStreamingLexerDef};
+use lrlex::{DefaultLexeme, lrlex_mod};
 use lrpar::lrpar_mod;
 use plotters::prelude::*;
 use crate::tree_node::TreeNode;
@@ -99,15 +97,18 @@ impl RunTime {
             let from = f64::max(stat.from, self.x_range.0);
             let to = f64::min(stat.to, self.x_range.1);
             chart.draw_series(PointSeries::of_element(
-                (from as f32..to as f32)
+                (from as f32..to as f32 + stat.step as f32)
                     .step(stat.step as f32)
                     .values()
                     .map(|v| {
                         self.process_data(tree_node::eval(&stat.x, v as f64),
                                           tree_node::eval(&stat.y, v as f64))
                     })
-                    .filter(|(_, y)| {
-                        y.to_owned() as f64 <= self.y_range.1 && y.to_owned() as f64 >= self.y_range.0
+                    .filter(|(x, y)| {
+                        y.to_owned() as f64 <= self.y_range.1
+                            && y.to_owned() as f64 >= self.y_range.0
+                            && x.to_owned() as f64 >= self.x_range.0
+                            && x.to_owned() as f64 <= self.x_range.1
                     })
                 ,
                 2,
