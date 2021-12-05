@@ -5,6 +5,8 @@ Stat -> Result<DrawableKind, ()>:
     | 'ROT' 'IS' Rot 'SEMICOLON' { $3 }
     | 'SCALE' 'IS' Scale 'SEMICOLON' { $3 }
     | 'FOR' DrawFor 'SEMICOLON' { $2 }
+    | 'SET' 'X' 'LB' Expr 'COMMA' Expr 'RB' 'SEMICOLON' { Ok(DrawableKind::XRange($4?, $6?)) }
+    | 'SET' 'Y' 'LB' Expr 'COMMA' Expr 'RB' 'SEMICOLON' { Ok(DrawableKind::YRange($4?, $6?)) }
     | 'SHOW' 'SEMICOLON' { Ok(DrawableKind::Show) }
     | 'EXIT' { Ok(DrawableKind::Exit) }
     ;

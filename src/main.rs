@@ -18,9 +18,9 @@ lrlex_mod!("lexer.l");
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
-const VERSION: &str = "0.2";
+const VERSION: &str = "0.2.2";
 
-lazy_static! {
+lazy_static!(
     static ref EXIT: Vec<String> = {
         let mut v = Vec::new();
         v.push("exit".to_string());
@@ -29,7 +29,7 @@ lazy_static! {
         v
     };
     static ref SUFFIX: Regex = Regex::new("^.*\\.pg$").unwrap();
-}
+);
 
 fn info() {
     println!(r"                                  _     ");
@@ -48,10 +48,12 @@ fn main() {
 
     info();
 
+    let runtime = RunTime::new();
+
     let args = std::env::args();
     if args.len() < 2 {
         // interactive shell mode
-        shell();
+        shell(runtime);
     } else {
         // read file and do the interpretation
         // second argument is the file name
@@ -64,14 +66,14 @@ fn main() {
         }
         println!("# file is: {}", file);
         if SUFFIX.is_match(&file) {
-            crate::file(fs::read_to_string(file).unwrap());
+            crate::file(runtime, fs::read_to_string(file).unwrap().to_lowercase());
         } else {
             eprintln!("Error: file format is not support");
         }
     }
 }
 
-fn file(file: String) {
+fn file(rt: RunTime, file: String) {
     println!("# whole file: \n{}", file);
     println!("# program launch");
     let mut rt = RunTime::new();
@@ -79,8 +81,9 @@ fn file(file: String) {
         .split("\n")
         .filter(
             |x| {
-                !x.starts_with("//") &&
-                    !x.starts_with("--")
+                x.len() > 0
+                    && !x.starts_with("//")
+                    && !x.starts_with("--")
             }
         )
         .map(|x| {
@@ -112,40 +115,12 @@ fn file(file: String) {
                 if !EXIT.contains(&stat) {
                     stat = format!("{};", stat);
                 }
-                let lexerdef = lexer_l::lexerdef();
-                let lexer = lexerdef.lexer(stat.as_str());
-                // Pass the lexer to the parser and lex and parse the input.
-                let (res, errs) = parser_y::parse(&lexer);
-                for e in errs {
-                    println!("{}", e.pp(&lexer, &parser_y::token_epp));
-                }
-                match res {
-                    Some(r) => {
-                        if cfg!(feature="debug") {
-                            println!("Result: {:#?}", r);
-                        }
-                        if let Ok(r) = r {
-                            match r {
-                                DrawableKind::Rot(r) => rt.set_rot(r),
-                                DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
-                                DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
-                                DrawableKind::DrawableFor(x) => rt.for_draw(x),
-                                DrawableKind::Show => rt.show(),
-                                DrawableKind::Exit => {
-                                    return;
-                                }
-                            }
-                        } else {
-                            println!("Illegal command");
-                        }
-                    }
-                    _ => eprintln!("Unable to evaluate expression.")
-                }
+                rt.run(stat.as_str());
             }
         )
 }
 
-fn shell() {
+fn shell(rt: RunTime) {
     // basic information
     println!("Penguin compiler: version {}", VERSION);
     let mut rt = RunTime::new();
@@ -186,7 +161,6 @@ fn shell() {
                 gl_input += &l.trim_end().to_lowercase();
                 if !gl_input.ends_with(";") && !EXIT.contains(&gl_input) {
                     is_continue = true;
-                    gl_input += " ";
                     continue;
                 }
 
@@ -209,34 +183,7 @@ fn shell() {
                         v = format!("{};", v);
                     }
 
-                    let lexer = lexerdef.lexer(v.as_str());
-                    // Pass the lexer to the parser and lex and parse the input.
-                    let (res, errs) = parser_y::parse(&lexer);
-                    for e in errs {
-                        println!("{}", e.pp(&lexer, &parser_y::token_epp));
-                    }
-                    match res {
-                        Some(r) => {
-                            if cfg!(feature="debug") {
-                                println!("Result: {:#?}", r);
-                            }
-                            if let Ok(r) = r {
-                                match r {
-                                    DrawableKind::Rot(r) => rt.set_rot(r),
-                                    DrawableKind::Scale(x, y) => rt.set_scale((x, y)),
-                                    DrawableKind::Origin(x, y) => rt.set_origin((x, y)),
-                                    DrawableKind::DrawableFor(x) => rt.for_draw(x),
-                                    DrawableKind::Show => rt.show(),
-                                    DrawableKind::Exit => {
-                                        break 'label;
-                                    }
-                                }
-                            } else {
-                                println!("Illegal command");
-                            }
-                        }
-                        _ => eprintln!("Unable to evaluate expression.")
-                    }
+                    rt.run(v.as_str());
                 }
 
                 // prepare for new input

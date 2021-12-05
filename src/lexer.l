@@ -23,4 +23,7 @@ t "T"
 \*\* "POWER"
 pi|e "CONST"
 cos|sin|tan|ln|exp|sqrt "FUNC"
+set "SET"
+x "X"
+y "Y"
 [\t ]+ ;
