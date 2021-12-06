@@ -1,15 +1,18 @@
+use std::fmt::format;
 use std::process::exit;
 use lazy_static::lazy_static;
 use lrlex::{DefaultLexeme, lrlex_mod};
 use lrpar::lrpar_mod;
 use plotters::prelude::*;
 use crate::tree_node::TreeNode;
-use crate::tree_node;
+use crate::{file, tree_node};
 lrlex_mod!("lexer.l");
 lrpar_mod!("parser.y");
 
+
 lazy_static!(
     static ref LEXER_DEF: lrlex::LRNonStreamingLexerDef<DefaultLexeme, u32> = lexer_l::lexerdef();
+    static ref PIC_NUM: u32 = 0;
 );
 
 #[derive(Debug)]
@@ -44,6 +47,7 @@ pub struct RunTime {
     y_range: (f64, f64),
     size: f64,
     color: String,
+    pic_num: u32,
 }
 
 impl RunTime {
@@ -57,6 +61,7 @@ impl RunTime {
             y_range: (-4.0, 4.0),
             size: 2.0,
             color: "blue".to_string(),
+            pic_num: 0,
         }
     }
 
@@ -71,6 +76,7 @@ impl RunTime {
             y_range: (0.0, 0.0),
             size,
             color,
+            pic_num: 0,
         }
     }
 
@@ -114,9 +120,11 @@ impl RunTime {
     }
 
     pub fn show(&mut self) {
+        let file_name = format!("graph/{}.png", self.pic_num);
         let root =
-            BitMapBackend::new("graph/0.png", (1024, 1024))
+            BitMapBackend::new(file_name.as_str(), (1024, 1024))
                 .into_drawing_area();
+
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
             .margin(60)
@@ -163,8 +171,9 @@ impl RunTime {
                 },
             )).unwrap();
         });
-        println!("Draw success in ./graph/0.png");
+        println!("Draw success in {}", file_name);
         self.graph.clear();
+        self.pic_num += 1;
     }
 
 

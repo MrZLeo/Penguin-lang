@@ -2,7 +2,7 @@ mod rt_util;
 mod tree_node;
 
 use std::fs;
-use std::io::{self, BufRead, Write};
+use std::io::{self, BufRead, ErrorKind, Write};
 use lazy_static::lazy_static;
 use regex::Regex;
 use lrlex::lrlex_mod;
@@ -18,7 +18,7 @@ lrlex_mod!("lexer.l");
 // with a suffix of `_y`).
 lrpar_mod!("parser.y");
 
-const VERSION: &str = "0.2.5";
+const VERSION: &str = "0.2.6";
 
 lazy_static!(
     static ref EXIT: Vec<String> = {
@@ -44,9 +44,17 @@ fn info() {
 
 fn main() {
     info();
-
     #[cfg(feature = "debug")] {
         println!("### debug mode is open. ###");
+    }
+
+    // create directory for graph that user will draw
+    match fs::create_dir("graph") {
+        Err(e) => match e.kind() {
+            ErrorKind::AlreadyExists => {}
+            _ => eprintln!("!{:?}", e),
+        }
+        Ok(_) => { println!("# Created directory `graph` for output.") }
     }
 
     let runtime = RunTime::new();
