@@ -1,18 +1,37 @@
 # Penguin-Lang
+
 This is a compiler for a language that provide a python-like interface to draw figures.
 
 - use `cargo run`to compile and use it.
 - when program launch, you can see an interface like
+
 ```shell
->>> 
+  >>> 
 ```
-### grammar supported:
+
+If you enjoy writing code in file, it would be better for you to write the code in a file that has a suffix `.pg`, and
+use is as input:
+
+```shell
+  $> penguin-lang file.pg
+```
+
+### Grammar supported:
+
 1. origin is (\<num)>, \<num>);
 2. rot is \<num>;
 3. scale is (\<num>, \<num>);
-4. for x from \<num> to \<num> step \<num> draw(\<expr of x>, \<expr of x>)
-5. exit
+4. set x (n, m);
+5. set y (n, m);
+6. set color \<c\>;
+7. set size n;
+8. for t from \<num> to \<num> step \<num> draw(\<expr of t>, \<expr of t>);
+9. show;
+10. exit/quit/q
 
-**project now is in the very beginning phrase of development, so all functions now will not run properly!**
+### Example
+A proper example can be found in root directory: `code.pg`.
+
+**Enjoy it! :)**
 
 

@@ -1,11 +1,10 @@
-use std::fmt::format;
 use std::process::exit;
 use lazy_static::lazy_static;
 use lrlex::{DefaultLexeme, lrlex_mod};
 use lrpar::lrpar_mod;
 use plotters::prelude::*;
 use crate::tree_node::TreeNode;
-use crate::{file, tree_node};
+use crate::tree_node;
 lrlex_mod!("lexer.l");
 lrpar_mod!("parser.y");
 
