@@ -124,6 +124,7 @@ fn file(mut rt: RunTime, file: String) {
     // todo 文件中混杂exit怎么办？
     file.split(";")
         .into_iter()
+        .map(|stat| stat.trim_start().trim_end())
         .filter(|stat| {
             stat.len() > 0
         })
@@ -131,6 +132,7 @@ fn file(mut rt: RunTime, file: String) {
             |stat| {
                 #[cfg(feature = "debug")] {
                     println!("# file statement: {}", stat);
+                    println!("# len of line: {}", stat.len());
                 }
                 let mut stat = stat.to_string();
                 if !EXIT.contains(&stat) {
