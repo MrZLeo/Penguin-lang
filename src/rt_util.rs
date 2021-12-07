@@ -139,7 +139,7 @@ impl RunTime {
             let from = f64::max(stat.from, self.x_range.0);
             let to = f64::min(stat.to, self.x_range.1);
             chart.draw_series(PointSeries::of_element(
-                (from as f32..to as f32 + stat.step as f32)
+                (from as f32..(to + stat.step) as f32)
                     .step(stat.step as f32)
                     .values()
                     .map(|v| {

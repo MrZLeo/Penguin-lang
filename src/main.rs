@@ -149,7 +149,7 @@ fn shell(mut rt: RunTime) {
     let mut is_continue = false;
     loop {
         if is_continue {
-            print!("...");
+            print!("... ");
         } else {
             print!(">>> ");
         }

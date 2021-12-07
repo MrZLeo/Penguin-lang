@@ -1,6 +1,6 @@
 // this is a test file
-rot is 0;
-scale is (1, 1);
+rot is 0.0;
+scale is (1, 1.);
 // draw the graph
 set x (-100, 100);
 set y (-100, 100);
@@ -15,7 +15,7 @@ for t from -100 to 100 step 0.8 draw(80 * sin(t), 35 * cos(t)); // circle
 set size 1;
 set color blue;
 rot is 0;
-origin is (0, 0);
+origin is (.0, 0.);
 for t from -100 to 100 step 0.01 draw(t, 40 * sin(t / 2)); //sine
 
 set color green;
