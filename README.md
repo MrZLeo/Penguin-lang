@@ -6,7 +6,7 @@ This is a compiler for a language that provide a python-like interface to draw f
 - when program launch, you can see an interface like
 
 ```shell
-  >>> 
+  >>>
 ```
 
 If you enjoy writing code in file, it would be better for you to write the code in a file that has a suffix `.pg`, and
@@ -28,6 +28,16 @@ use is as input:
 8. for t from \<num> to \<num> step \<num> draw(\<expr of t>, \<expr of t>);
 9. show;
 10. exit/quit/q
+
+### Default values:
+1. rot = 0
+2. origin = (0, 0)
+3. scale = (1, 1)
+4. color = yellow
+5. x = (0, 10)
+6. y = (-4, 4)
+7. size = 2
+8. output -> /graph (**unchangeable now**)
 
 ### Example
 A proper example can be found in root directory: `code.pg`.
