@@ -1,5 +1,7 @@
 # Penguin-Lang
 
+![Alt](https://repobeats.axiom.co/api/embed/cb175c078f1bf431ac0ff33baa66579f69b29da3.svg "Repobeats analytics image")
+
 This is a compiler for a language that provide a python-like interface to draw figures.
 
 - use `cargo run`to compile and use it.
