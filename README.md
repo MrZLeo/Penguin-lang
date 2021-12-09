@@ -1,6 +1,6 @@
 # Penguin-Lang
 
-![Alt](https://repobeats.axiom.co/api/embed/cb175c078f1bf431ac0ff33baa66579f69b29da3.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/07e5f53394f056be7955ccd0f546d7cf14f3107d.svg "Repobeats analytics image")
 
 This is a compiler for a language that provide a python-like interface to draw figures.
 
