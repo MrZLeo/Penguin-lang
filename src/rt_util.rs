@@ -136,6 +136,18 @@ impl RunTime {
         chart.configure_mesh().draw().unwrap();
 
         self.graph.iter().for_each(|(stat, rt)| {
+            #[cfg(feature = "debug")] {
+                println!("### show {} ###", &file_name);
+                println!("--------------------");
+                println!("origin: ({}, {})", rt.origin.0, rt.origin.1);
+                println!("scale: ({},{})", rt.scale.0, rt.scale.1);
+                println!("rot: {}", rt.rot);
+                println!("size: {}", rt.size);
+                println!("color: {}", rt.color);
+                println!("x: [{}, {}]", self.x_range.0, self.x_range.1);
+                println!("y: [{}, {}]", self.y_range.0, self.y_range.1);
+                println!("--------------------");
+            }
             let from = f64::max(stat.from, self.x_range.0);
             let to = f64::min(stat.to, self.x_range.1);
             chart.draw_series(PointSeries::of_element(
@@ -178,15 +190,16 @@ impl RunTime {
 
     fn process_data(&self, x: f64, y: f64) -> (f32, f32) {
         // scale
-        let mut x = x as f64 * self.scale.0;
-        let mut y = y as f64 * self.scale.1;
+        let mut x = x * self.scale.0;
+        let mut y = y * self.scale.1;
 
         // rotation
         //     temp=local_x*cos(Rot_angle)+local_y*sin(Rot_angle);
         //     local_y=local_y*cos(Rot_angle)-local_x*sin(Rot_angle);
         //     local_x = temp;
-        x = x * self.rot.cos() + y * self.rot.sin();
+        let temp = x * self.rot.cos() + y * self.rot.sin();
         y = y * self.rot.cos() - x * self.rot.sin();
+        x = temp;
 
         // translation
         x += self.origin.0;
