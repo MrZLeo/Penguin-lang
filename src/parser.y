@@ -7,7 +7,7 @@ Stat -> Result<DrawableKind, ()>:
     | 'FOR' DrawFor 'SEMICOLON' { $2 }
     | 'SET' 'X' 'LB' Expr 'COMMA' Expr 'RB' 'SEMICOLON' { Ok(DrawableKind::XRange($4?, $6?)) }
     | 'SET' 'Y' 'LB' Expr 'COMMA' Expr 'RB' 'SEMICOLON' { Ok(DrawableKind::YRange($4?, $6?)) }
-    | 'SET' "SIZE" Expr 'SEMICOLON' { Ok(DrawableKind::DotSize($3?)) }
+    | 'SET' 'SIZE' Expr 'SEMICOLON' { Ok(DrawableKind::DotSize($3?)) }
     | 'SET' 'COLOR' 'COLORS' 'SEMICOLON'
         {
             let v = $3.map_err(|_| ())?;

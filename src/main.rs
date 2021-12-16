@@ -1,13 +1,13 @@
 mod rt_util;
 mod tree_node;
 
-use std::fs;
-use std::io::{self, BufRead, ErrorKind, Write};
+use crate::rt_util::*;
 use lazy_static::lazy_static;
-use regex::Regex;
 use lrlex::lrlex_mod;
 use lrpar::lrpar_mod;
-use crate::rt_util::*;
+use regex::Regex;
+use std::fs;
+use std::io::{self, BufRead, ErrorKind, Write};
 
 // Using `lrlex_mod!` brings the lexer for `calc.l` into scope. By default the
 // module name will be `calc_l` (i.e. the file name, minus any extensions,
@@ -20,7 +20,7 @@ lrpar_mod!("parser.y");
 
 const VERSION: &str = "0.2.6";
 
-lazy_static!(
+lazy_static! {
     static ref EXIT: Vec<String> = {
         let mut v = Vec::new();
         v.push("exit".to_string());
@@ -29,7 +29,7 @@ lazy_static!(
         v
     };
     static ref SUFFIX: Regex = Regex::new("^.*\\.pg$").unwrap();
-);
+}
 
 fn info() {
     println!(r"                                  _     ");
@@ -41,10 +41,10 @@ fn info() {
     println!("Penguin compiler: version {}", VERSION);
 }
 
-
 fn main() {
     info();
-    #[cfg(feature = "debug")] {
+    #[cfg(feature = "debug")]
+    {
         println!("### debug mode is open. ###");
     }
 
@@ -53,8 +53,10 @@ fn main() {
         Err(e) => match e.kind() {
             ErrorKind::AlreadyExists => {}
             _ => eprintln!("!{:?}", e),
+        },
+        Ok(_) => {
+            println!("# Created directory `graph` for output.")
         }
-        Ok(_) => { println!("# Created directory `graph` for output.") }
     }
 
     let runtime = RunTime::new();
@@ -73,7 +75,8 @@ fn main() {
                 break;
             }
         }
-        #[cfg(feature = "debug")] {
+        #[cfg(feature = "debug")]
+        {
             println!("# file is: {}", file);
         }
         if SUFFIX.is_match(&file) {
@@ -85,7 +88,8 @@ fn main() {
 }
 
 fn file(mut rt: RunTime, file: String) {
-    #[cfg(feature = "debug")] {
+    #[cfg(feature = "debug")]
+    {
         println!("# whole file:");
         println!("------------------------------");
         println!("{}", file);
@@ -94,27 +98,22 @@ fn file(mut rt: RunTime, file: String) {
     }
     let file: String = file
         .split("\n")
-        .filter(
-            |x| {
-                x.len() > 0
-                    && !x.starts_with("//")
-                    && !x.starts_with("--")
-            }
-        )
+        .filter(|x| x.len() > 0 && !x.starts_with("//") && !x.starts_with("--"))
         .map(|x| {
             &x[0..match x.find("//") {
-                None => { x.len() }
-                Some(index) => { index }
+                None => x.len(),
+                Some(index) => index,
             }]
         })
         .map(|x| {
             &x[0..match x.find("--") {
-                None => { x.len() }
-                Some(index) => { index }
+                None => x.len(),
+                Some(index) => index,
             }]
         })
         .collect();
-    #[cfg(feature = "debug")] {
+    #[cfg(feature = "debug")]
+    {
         println!("# file delete comment:");
         println!("------------------------------");
         println!("{}", file);
@@ -125,22 +124,19 @@ fn file(mut rt: RunTime, file: String) {
     file.split(";")
         .into_iter()
         .map(|stat| stat.trim_start().trim_end())
-        .filter(|stat| {
-            stat.len() > 0
-        })
-        .for_each(
-            |stat| {
-                #[cfg(feature = "debug")] {
-                    println!("# file statement: {}", stat);
-                    println!("# len of line: {}", stat.len());
-                }
-                let mut stat = stat.to_string();
-                if !EXIT.contains(&stat) {
-                    stat = format!("{};", stat);
-                }
-                rt.run(stat.as_str());
+        .filter(|stat| stat.len() > 0)
+        .for_each(|stat| {
+            #[cfg(feature = "debug")]
+            {
+                println!("# file statement: {}", stat);
+                println!("# len of line: {}", stat.len());
             }
-        )
+            let mut stat = stat.to_string();
+            if !EXIT.contains(&stat) {
+                stat = format!("{};", stat);
+            }
+            rt.run(stat.as_str());
+        })
 }
 
 fn shell(mut rt: RunTime) {
@@ -165,13 +161,15 @@ fn shell(mut rt: RunTime) {
                 // Now we create a lexer with the `lexer` method with which
                 // we can lex an input.
                 let l = l[0..match l.find("//") {
-                    None => { l.len() }
-                    Some(idx) => { idx }
-                }].to_string();
+                    None => l.len(),
+                    Some(idx) => idx,
+                }]
+                    .to_string();
                 let l = l[0..match l.find("--") {
-                    None => { l.len() }
-                    Some(idx) => { idx }
-                }].to_string();
+                    None => l.len(),
+                    Some(idx) => idx,
+                }]
+                    .to_string();
 
                 // if is not the end of line, continue
                 gl_input += &l.trim_end().to_lowercase();
@@ -180,7 +178,8 @@ fn shell(mut rt: RunTime) {
                     continue;
                 }
 
-                #[cfg(feature = "debug")] {
+                #[cfg(feature = "debug")]
+                {
                     println!("global input: {}", gl_input);
                 }
 
@@ -189,7 +188,8 @@ fn shell(mut rt: RunTime) {
                         break;
                     }
 
-                    #[cfg(feature = "debug")] {
+                    #[cfg(feature = "debug")]
+                    {
                         println!("v: {}", v);
                         println!("v's len: {}", v.len());
                     }
@@ -206,7 +206,7 @@ fn shell(mut rt: RunTime) {
                 gl_input.clear();
                 is_continue = false;
             }
-            _ => break
+            _ => break,
         }
     }
 }

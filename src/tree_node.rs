@@ -13,17 +13,15 @@ pub fn eval(root: &TreeNode, v: f64) -> f64 {
         return a;
     }
 
-
     let l = match root.left {
         Some(ref x) => eval(x, v),
-        _ => 0.0
+        _ => 0.0,
     };
 
     let r = match root.right {
         Some(ref x) => eval(x, v),
-        _ => 0.0
+        _ => 0.0,
     };
-
 
     match val {
         "t" => v,
@@ -40,7 +38,7 @@ pub fn eval(root: &TreeNode, v: f64) -> f64 {
         "*" => l * r,
         "/" => l / r,
         "**" => l.powf(r),
-        _ => f64::MIN
+        _ => f64::MIN,
     }
 }
 
@@ -48,50 +46,36 @@ pub fn eval(root: &TreeNode, v: f64) -> f64 {
 fn test_eval() {
     let x = Some(Box::new(TreeNode {
         val: "-".to_string(),
-        left: Some(Box::new(
-            TreeNode {
-                val: "+".to_string(),
-                left: Some(Box::new(
-                    TreeNode {
-                        val: "*".to_string(),
-                        left: Some(Box::new(
-                            TreeNode {
-                                val: "t".to_string(),
-                                left: None,
-                                right: None,
-                            },
-                        )),
-                        right: Some(Box::new(
-                            TreeNode {
-                                val: "2".to_string(),
-                                left: None,
-                                right: None,
-                            },
-                        )),
-                    },
-                )),
-                right: Some(Box::new(
-                    TreeNode {
-                        val: "t".to_string(),
-                        left: None,
-                        right: None,
-                    },
-                )),
-            },
-        )),
-        right: Some(Box::new(
-            TreeNode {
-                val: "exp".to_string(),
-                left: Some(Box::new(
-                    TreeNode {
-                        val: "t".to_string(),
-                        left: None,
-                        right: None,
-                    },
-                )),
+        left: Some(Box::new(TreeNode {
+            val: "+".to_string(),
+            left: Some(Box::new(TreeNode {
+                val: "*".to_string(),
+                left: Some(Box::new(TreeNode {
+                    val: "t".to_string(),
+                    left: None,
+                    right: None,
+                })),
+                right: Some(Box::new(TreeNode {
+                    val: "2".to_string(),
+                    left: None,
+                    right: None,
+                })),
+            })),
+            right: Some(Box::new(TreeNode {
+                val: "t".to_string(),
+                left: None,
                 right: None,
-            },
-        )),
+            })),
+        })),
+        right: Some(Box::new(TreeNode {
+            val: "exp".to_string(),
+            left: Some(Box::new(TreeNode {
+                val: "t".to_string(),
+                left: None,
+                right: None,
+            })),
+            right: None,
+        })),
     }));
 
     assert_eq!(eval(&x.as_ref().unwrap(), 1.0), 0.2817181715409549);

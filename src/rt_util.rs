@@ -1,18 +1,17 @@
-use std::process::exit;
+use crate::tree_node;
+use crate::tree_node::TreeNode;
 use lazy_static::lazy_static;
-use lrlex::{DefaultLexeme, lrlex_mod};
+use lrlex::{lrlex_mod, DefaultLexeme};
 use lrpar::lrpar_mod;
 use plotters::prelude::*;
-use crate::tree_node::TreeNode;
-use crate::tree_node;
+use std::process::exit;
 lrlex_mod!("lexer.l");
 lrpar_mod!("parser.y");
 
-
-lazy_static!(
+lazy_static! {
     static ref LEXER_DEF: lrlex::LRNonStreamingLexerDef<DefaultLexeme, u32> = lexer_l::lexerdef();
     static ref PIC_NUM: u32 = 0;
-);
+}
 
 #[derive(Debug)]
 pub enum DrawableKind {
@@ -108,35 +107,38 @@ impl RunTime {
     }
 
     pub fn for_draw(&mut self, stat: ForStruct) {
-        self.graph.push((stat,
-                         RunTime::from(
-                             self.origin,
-                             self.rot,
-                             self.scale,
-                             self.size,
-                             self.color.clone()))
-        );
+        self.graph.push((
+            stat,
+            RunTime::from(
+                self.origin,
+                self.rot,
+                self.scale,
+                self.size,
+                self.color.clone(),
+            ),
+        ));
     }
 
     pub fn show(&mut self) {
         let file_name = format!("graph/{}.png", self.pic_num);
-        let root =
-            BitMapBackend::new(file_name.as_str(), (1024, 1024))
-                .into_drawing_area();
+        let root = BitMapBackend::new(file_name.as_str(), (1024, 1024)).into_drawing_area();
 
         root.fill(&WHITE).unwrap();
         let mut chart = ChartBuilder::on(&root)
             .margin(60)
             .x_label_area_size(30)
             .y_label_area_size(30)
-            .build_cartesian_2d(self.x_range.0 as f32..self.x_range.1 as f32,
-                                self.y_range.0 as f32..self.y_range.1 as f32)
+            .build_cartesian_2d(
+                self.x_range.0 as f32..self.x_range.1 as f32,
+                self.y_range.0 as f32..self.y_range.1 as f32,
+            )
             .unwrap();
 
         chart.configure_mesh().draw().unwrap();
 
         self.graph.iter().for_each(|(stat, rt)| {
-            #[cfg(feature = "debug")] {
+            #[cfg(feature = "debug")]
+            {
                 println!("### show {} ###", &file_name);
                 println!("--------------------");
                 println!("origin: ({}, {})", rt.origin.0, rt.origin.1);
@@ -150,43 +152,44 @@ impl RunTime {
             }
             let from = f64::max(stat.from, self.x_range.0);
             let to = f64::min(stat.to, self.x_range.1);
-            chart.draw_series(PointSeries::of_element(
-                (from as f32..(to + stat.step) as f32)
-                    .step(stat.step as f32)
-                    .values()
-                    .map(|v| {
-                        rt.process_data(tree_node::eval(&stat.x, v as f64),
-                                        tree_node::eval(&stat.y, v as f64))
-                    })
-                    .filter(|(x, y)| {
-                        y.to_owned() as f64 <= self.y_range.1
-                            && y.to_owned() as f64 >= self.y_range.0
-                            && x.to_owned() as f64 >= self.x_range.0
-                            && x.to_owned() as f64 <= self.x_range.1
-                    })
-                ,
-                rt.size,
-                match rt.color.as_str() {
-                    "blue" => ShapeStyle::from(&BLUE).filled(),
-                    "red" => ShapeStyle::from(&RED).filled(),
-                    "green" => ShapeStyle::from(&GREEN).filled(),
-                    "black" => ShapeStyle::from(&BLACK).filled(),
-                    "yellow" => ShapeStyle::from(&YELLOW).filled(),
-                    "cyan" => ShapeStyle::from(&CYAN).filled(),
-                    "magenta" => ShapeStyle::from(&MAGENTA).filled(),
-                    _ => ShapeStyle::from(&TRANSPARENT).filled(),
-                },
-                &|coord, size, style| {
-                    EmptyElement::at(coord)
-                        + Circle::new((0, 0), size, style)
-                },
-            )).unwrap();
+            chart
+                .draw_series(PointSeries::of_element(
+                    (from as f32..(to + stat.step) as f32)
+                        .step(stat.step as f32)
+                        .values()
+                        .map(|v| {
+                            rt.process_data(
+                                tree_node::eval(&stat.x, v as f64),
+                                tree_node::eval(&stat.y, v as f64),
+                            )
+                        })
+                        .filter(|(x, y)| {
+                            y.to_owned() as f64 <= self.y_range.1
+                                && y.to_owned() as f64 >= self.y_range.0
+                                && x.to_owned() as f64 >= self.x_range.0
+                                && x.to_owned() as f64 <= self.x_range.1
+                        }),
+                    rt.size,
+                    match rt.color.as_str() {
+                        "blue" => ShapeStyle::from(&BLUE).filled(),
+                        "red" => ShapeStyle::from(&RED).filled(),
+                        "green" => ShapeStyle::from(&GREEN).filled(),
+                        "black" => ShapeStyle::from(&BLACK).filled(),
+                        "yellow" => ShapeStyle::from(&YELLOW).filled(),
+                        "cyan" => ShapeStyle::from(&CYAN).filled(),
+                        "magenta" => ShapeStyle::from(&MAGENTA).filled(),
+                        _ => ShapeStyle::from(&TRANSPARENT).filled(),
+                    },
+                    &|coord, size, style| {
+                        EmptyElement::at(coord) + Circle::new((0, 0), size, style)
+                    },
+                ))
+                .unwrap();
         });
         println!("Draw success in {}", file_name);
         self.graph.clear();
         self.pic_num += 1;
     }
-
 
     fn process_data(&self, x: f64, y: f64) -> (f32, f32) {
         // scale
@@ -217,7 +220,7 @@ impl RunTime {
         }
         match res {
             Some(r) => {
-                if cfg!(feature="debug") {
+                if cfg!(feature = "debug") {
                     println!("Result: {:#?}", r);
                 }
                 if let Ok(r) = r {
@@ -237,7 +240,7 @@ impl RunTime {
                     println!("Illegal command");
                 }
             }
-            _ => eprintln!("Unable to evaluate expression.")
+            _ => eprintln!("Unable to evaluate expression."),
         }
     }
 }
