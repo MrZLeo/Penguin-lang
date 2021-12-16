@@ -1,12 +1,12 @@
 // this is a test file
-rot is 0.0;
-scale is (1, 1.);
+  rot is 0.0;
+scale is (1., 1);
 // draw the graph
-set x (-100, 100);
-set y (-100, 100);
+    set x (-100, 100);
+set     y (-100, 100);
 
 set size 2; set color red;
-rot is 
+rot is
 PI / 4;
 
 origin is (-20, -20);
@@ -27,15 +27,43 @@ set size 3;
 set color cyan;
 for t from -100 to 100 step 5 draw(t, t);
 
+set color red;
+set size 1;
+scale is (20, 20);
+rot is -PI/2;
+for t from -100 to 100 step 0.5 draw(2*cos(t) - cos(2*t), 2*sin(t) - sin(2*t));
+scale is (1, 1);
+
+set size 3;
+rot is 0;
 set color yellow;
-for t from -2*PI to 2*PI step 0.07 draw(60*sin(t), 60*cos(t));
+for t from -2*PI to 2*PI step 0.07 draw(70*sin(t), 70*cos(t));
 
 show; -- 1.png
 
+set x(-10, 10);
 set color MAGENTA;
-for t from 0 to 2*PI step 0.1 draw (t, sin(PI/2));
+scale is (1, 1);
+rot is 0;
+origin is (0, 0);
+set size 1.5;
+for t from -100 to 100 step 0.1 draw (t, ln(t));
+for t from -100 to 100 step 0.1 draw (t, exp(t));
+
+set size 1;
+set color green;
+for t from -100 to 100 step 0.1 draw (t, t);
+set color red;
+for t from -100 to 100 step 0.1 draw (t, t**2);
+set color blue;
+for t from -100 to 100 step 0.05 draw (t, t**3);
 
 set color black;
-for t from 0 to 2*PI step 0.1 draw (t+10, sin(90));
+set size 1;
+scale is (10, 1);
+for t from -100 to 200 step 0.006 draw (t, tan(t));
 
-show; 
+ show; -- 2.png
+
+
+-- end of file
