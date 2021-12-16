@@ -18,12 +18,12 @@ use is as input:
 
 ### Grammar supported:
 
-1. origin is (\<num)>, \<num>);
+1. origin is (\<num>, \<num>);
 2. rot is \<num>;
 3. scale is (\<num>, \<num>);
-4. set x (n, m);
-5. set y (n, m);
-6. set color \<c\>;
+4. set x (\<num>, \<num>);
+5. set y (\<num>, \<num>);
+6. set color \<color\>;
 7. set size n;
 8. for t from \<num> to \<num> step \<num> draw(\<expr of t>, \<expr of t>);
 9. show;
@@ -38,6 +38,23 @@ use is as input:
 6. y = (-4, 4)
 7. size = 2
 8. output -> /graph (**unchangeable now**)
+
+## color support:
+- blue
+- red
+- green
+- black
+- yellow
+- cyan
+- magenta
+
+## math function support:
+- cos
+- sin
+- tan
+- ln
+- exp
+- sqrt
 
 ### Example
 A proper example can be found in root directory: `code.pg`.
