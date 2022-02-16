@@ -22,10 +22,7 @@ const VERSION: &str = "0.2.6";
 
 lazy_static! {
     static ref EXIT: Vec<String> = {
-        let mut v = Vec::new();
-        v.push("exit".to_string());
-        v.push("q".to_string());
-        v.push("quit".to_string());
+        let v = vec!["exit".to_string(), "q".to_string(), "quit".to_string()];
         v
     };
     static ref SUFFIX: Regex = Regex::new("^.*\\.pg$").unwrap();
@@ -97,8 +94,8 @@ fn file(mut rt: RunTime, file: String) {
         println!("# program launch");
     }
     let file: String = file
-        .split("\n")
-        .filter(|x| x.len() > 0 && !x.starts_with("//") && !x.starts_with("--"))
+        .split('\n')
+        .filter(|x| !x.is_empty() && !x.starts_with("//") && !x.starts_with("--"))
         .map(|x| {
             &x[0..match x.find("//") {
                 None => x.len(),
@@ -121,10 +118,10 @@ fn file(mut rt: RunTime, file: String) {
     }
 
     // todo 文件中混杂exit怎么办？
-    file.split(";")
+    file.split(';')
         .into_iter()
         .map(|stat| stat.trim_start().trim_end())
-        .filter(|stat| stat.len() > 0)
+        .filter(|stat| !stat.is_empty())
         .for_each(|stat| {
             #[cfg(feature = "debug")]
             {
@@ -173,7 +170,7 @@ fn shell(mut rt: RunTime) {
 
                 // if is not the end of line, continue
                 gl_input += &l.trim_end().to_lowercase();
-                if !gl_input.ends_with(";") && !EXIT.contains(&gl_input) {
+                if !gl_input.ends_with(';') && !EXIT.contains(&gl_input) {
                     is_continue = true;
                     continue;
                 }
@@ -183,8 +180,8 @@ fn shell(mut rt: RunTime) {
                     println!("global input: {}", gl_input);
                 }
 
-                for v in gl_input.split(";") {
-                    if v.len() <= 0 {
+                for v in gl_input.split(';') {
+                    if v.is_empty() {
                         break;
                     }
 
